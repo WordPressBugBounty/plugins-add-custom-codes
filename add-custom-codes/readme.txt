@@ -1,15 +1,15 @@
 === Add Custom Codes - Insert Header, Footer, Custom Code Snippets, Custom CSS, Javascript ===
 Contributors: SaifuMak
 Donate link: https://donate.stripe.com/9AQdRz5xJ87c9i0bIS
-Tags: custom css, google analytics, header codes, footer codes, css, javascript, custom codes, wordpress custom css
-Requires at least: 6.0
-Tested up to: 6.4.2
+Tags: custom css, google analytics, header codes, footer codes, custom codes
+Requires at least: 6.6.2
+Tested up to: 6.7.2
 Requires PHP: 7.4
-Stable tag: 4.6
+Stable tag: 4.7
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Add custom codes to your wordpress website. A completely free plugin to add Custom CSS, Javascript, Google Analytics, Search console verification or any other codes to your website. 
+Add custom codes to your wordpress site. A completely free plugin to add Custom CSS, Javascript, Google Analytics, any other codes to your website. 
 
 == Description ==
 
@@ -99,6 +99,11 @@ Please clear your wordpress cache if you are using a caching plugin or service. 
 = 4.6 =
 * Tested to work with latest Wordpress
 
+= 4.7 =
+* Bugfixes and improvements
+* Tested to work with latest Wordpress
+* Option to Add custom codes to taxonomy pages
+
 == Upgrade Notice ==
 
 = 1.0 =
@@ -130,3 +135,6 @@ Tested to work with latest Wordpress
 
 = 4.6 =
 Tested to work with latest Wordpress
+
+= 4.7 =
+Bug fixes & improvements. Option to add Custom Codes to taxonomy pages.

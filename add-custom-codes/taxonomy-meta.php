@@ -4,18 +4,15 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 ?>
-<?php
-function accodes_is_gutenberg_active() {
-    // Check if we're on a post edit screen and Gutenberg is loaded
-    $current_screen = get_current_screen();
-    return (function_exists('is_gutenberg_page') && is_gutenberg_page())
-        || (isset($current_screen->is_block_editor) && $current_screen->is_block_editor)
-        || (defined('REST_REQUEST') && REST_REQUEST); 
-}
-?>
-<div class="acc-ind-col-1 ">
-	<?php wp_nonce_field('accodes_save_meta', 'accodes_meta_nonce'); ?>
-
+	
+<?php $taxonomy_obj = get_taxonomy($taxonomy);
+if ($taxonomy_obj) {
+    $taxonomy_name = $taxonomy_obj->labels->singular_name;
+}  ?>
+<div class="acc-ind-col-1 accodes-taxonomy-edit">
+	<?php echo "<h4>Add custom codes to this ".esc_html($taxonomy_name)."</h4>"; ?>
+	<?php wp_nonce_field('accodes_save_tax_meta', 'accodes_tax_meta_nonce'); ?>
+	
 		<fieldset class="accodes_ind_field">
 			<div>
 				<p class="acc_info">
@@ -30,11 +27,11 @@ function accodes_is_gutenberg_active() {
 				<textarea
 					type="text"
 					name="_accodes_header_metabox"
-					id="_accodes_header_metabox" class="<?php if (!accodes_is_gutenberg_active()) { echo "codemirror small-codemirror";} ?>"
-						  ><?php echo esc_textarea($header_script) ; ?></textarea>
+					id="_accodes_header_metabox" class="codemirror small-codemirror"
+						  ><?php echo esc_attr( $header_script ); ?></textarea>
 			</div>
 			<p>
-                <label for="accodes_hide_header" class="accodes-checkbox-label ">
+                <label for="accodes_hide_header" class="accodes-checkbox-label">
                             <input type="checkbox" <?php echo checked( $hide_header, 'on', false ) ?>
                                    name="accodes_hide_header" id="accodes_hide_header"/>
 							<?php esc_html_e( "Hide Global Header Codes on this page", 'add-custom-codes' ); ?>
@@ -56,8 +53,8 @@ function accodes_is_gutenberg_active() {
 				<textarea
 					type="text"
 					name="_accodes_footer_metabox"
-					id="_accodes_footer_metabox" class="<?php if (!accodes_is_gutenberg_active()) { echo "codemirror small-codemirror";} ?>"
-						  ><?php echo esc_textarea($footer_script) ; ?></textarea>
+					id="_accodes_footer_metabox" class="codemirror small-codemirror"
+						  ><?php echo esc_attr( $footer_script ); ?></textarea>
 				<p>
                 <label for="accodes_hide_footer" class="accodes-checkbox-label">
                             <input type="checkbox" <?php echo checked( $hide_footer, 'on', false ) ?>
