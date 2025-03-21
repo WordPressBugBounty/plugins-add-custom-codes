@@ -5,7 +5,7 @@ Tags: custom css, google analytics, header codes, footer codes, custom codes
 Requires at least: 6.6.2
 Tested up to: 6.7.2
 Requires PHP: 7.4
-Stable tag: 4.7
+Stable tag: 4.71
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -104,6 +104,9 @@ Please clear your wordpress cache if you are using a caching plugin or service. 
 * Tested to work with latest Wordpress
 * Option to Add custom codes to taxonomy pages
 
+= 4.71 =
+* Fixed a bug with css inputs
+
 == Upgrade Notice ==
 
 = 1.0 =
@@ -138,3 +141,6 @@ Tested to work with latest Wordpress
 
 = 4.7 =
 Bug fixes & improvements. Option to add Custom Codes to taxonomy pages.
+
+= 4.71 =
+Fixed a bug with css inputs

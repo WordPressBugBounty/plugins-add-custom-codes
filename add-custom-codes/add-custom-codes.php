@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Add Custom Codes - Insert Header, Footer, Custom Code Snippets
  * Description: Light-weight plugin to add Custom CSS, Javascript, Google Analytics, Search console verification tags and other custom code snippets to your Wordpress website. Go to <em>Appearance -> Add Custom Codes</em> after installing the plugin.
- * Version: 4.7
+ * Version: 4.71
  * Author: Saifudheen Mak
  * Author URI: https://maktalseo.com
  * License: GPL2
@@ -199,7 +199,7 @@ function accodes_css_output_header() {
 	{
 		$accodes_global_css = get_global_custom_css();
 		//escape
-		echo '<!-- Global CSS by Add Custom Codes --> <style type="text/css"> '.esc_html($accodes_global_css).' </style> <!-- End - Global CSS by Add Custom Codes -->';
+		echo '<!-- Global CSS by Add Custom Codes --> <style type="text/css"> '.wp_strip_all_tags($accodes_global_css).' </style> <!-- End - Global CSS by Add Custom Codes -->';
 	}
 }
 
@@ -212,7 +212,7 @@ function accodes_css_output_footer() {
 	{
 		$accodes_global_css = get_global_custom_css();
 		//escape
-		echo '<!-- Global CSS by Add Custom Codes --> <style type="text/css"> '.esc_html($accodes_global_css).' </style> <!-- End - Global CSS by Add Custom Codes -->';
+		echo '<!-- Global CSS by Add Custom Codes --> <style type="text/css"> '.wp_strip_all_tags($accodes_global_css).' </style> <!-- End - Global CSS by Add Custom Codes -->';
 	}
 }
 /*---------------------------------
