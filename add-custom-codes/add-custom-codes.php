@@ -1,8 +1,8 @@
-<?php
+<?php 
 /**
  * Plugin Name: Add Custom Codes - Insert Header, Footer, Custom Code Snippets
- * Description: Light-weight plugin to add Custom CSS, Javascript, Google Analytics, Search console verification tags and other custom code snippets to your Wordpress website. Go to <em>Appearance -> Add Custom Codes</em> after installing the plugin.
- * Version: 4.71
+ * Description: Light-weight plugin to add Custom PHP Functions, HTML, CSS, Javascript, Google Analytics, Search console verification tags and other custom code snippets to your Wordpress website. 
+ * Version: 4.80
  * Author: Saifudheen Mak
  * Author URI: https://maktalseo.com
  * License: GPL2
@@ -26,7 +26,7 @@ add_filter( 'plugin_action_links_' . plugin_basename(__FILE__), 'accodes_action_
  
 function accodes_action_links ( $actions ) {
    $mylinks = array(
-      '<a href="' . admin_url( 'themes.php?page=add-custom-codes' ) . '">Settings</a>',
+      '<a href="' . admin_url( 'edit.php?post_type=accodes_snippets&page=accodes-about' ) . '">Donate us</a>',
    );
    $actions = array_merge( $actions, $mylinks );
    return $actions;
@@ -52,27 +52,58 @@ styles and scripts for plugin page
 add_action('admin_enqueue_scripts', 'accodes_codemirror_scripts');
  
 function accodes_codemirror_scripts($hook) {
-	$cm_settings['codeEditor'] = wp_enqueue_code_editor(array('type' => 'htmlmixed'));
-	wp_localize_script('jquery', 'cm_settings', $cm_settings);
 	
+	wp_enqueue_code_editor([]);
+	wp_enqueue_script('wp-codemirror');
 	wp_enqueue_style('wp-codemirror');
 	
-	wp_register_style( 'accodes-css', plugins_url( 'add-custom-codes/css/style43.css' ), '', '4.193' );
-		wp_enqueue_style( 'accodes-css' );
+	// Enqueue CodeMirror theme if editing snippet
+	$screen = get_current_screen();
+	if ($screen->post_type === 'accodes_snippets') {
+		wp_enqueue_style(
+			'accodes-codemirror-material',
+			plugins_url('add-custom-codes/assets/css/codemirror-material.css'),
+			array(),
+			'1.0'
+		);
+	}
+
 	
-	wp_register_script( 'accodes-js', plugins_url( 'add-custom-codes/js/scripts.js' ),array(),'4.32', true);
+	wp_register_style( 'accodes-css', plugins_url( 'add-custom-codes/assets/css/style43.css' ), '', '4.259' );
+	wp_enqueue_style( 'accodes-css' );
+	
+	wp_register_script('accodes-js', plugins_url('add-custom-codes/assets/js/scripts.js'), ['jquery', 'jquery-ui-autocomplete'], '4.79', true);
 	wp_enqueue_script( 'accodes-js' );
 	
+	// Fetch tags for autocomplete
+    $tags = get_terms([
+        'taxonomy' => 'accodes_tag',
+        'hide_empty' => false,
+    ]);
+    $tag_names = wp_list_pluck($tags, 'name');
+
+    // Localize script once
+    wp_localize_script('accodes-js', 'accodes_data', [
+        'accodes_toggle_snippet_nonce' => wp_create_nonce('accodes_toggle_snippet'),
+        'accodes_tag_suggestions' => $tag_names,
+    ]);
+	
+	//localization of script for status toggle in snippet listing page
+	wp_localize_script('accodes-js', 'accodes_toggle_snippet_nonce', wp_create_nonce('accodes_toggle_snippet'));	
 }
 
-/*------------------------------
-add menu link for plugin settings page
-------------------------*/
-add_action('admin_menu', 'accodes_show_menu');
+//enque style for about page
+add_action('admin_enqueue_scripts', function ($hook) {
+		if ($hook === 'accodes_snippets_page_accodes-about') {
+			wp_enqueue_style(
+				'accodes-about-css',
+				plugins_url('assets/css/about.css', __FILE__),
+				[],
+				'1.2'
+			);
+		}
+});
 
-function accodes_show_menu() {
-	add_theme_page('Add Custom Codes', 'Add Custom Codes', 'administrator', 'add-custom-codes', 'accodes_settings_page');
-}
 
 function accodes_settings_page() {
 	if (!current_user_can('administrator')) {
@@ -87,8 +118,6 @@ define items in settings page
 -------------------------------*/
 
 function accodes_sanitize_raw_input($input) {
-    // Return raw input safely — meant for HTML, CSS, JS
-    //return is_string($input) ? wp_kses_post($input) : '';
     return $input;
 }
 
@@ -149,17 +178,13 @@ function get_current_page_id()
 {
 	global $post;
 	$current_page_id = false;
-	if ( ! isset( $post ) ) {
-		return false;
-	}
-	// if woocommerce product, get id
 	if ( class_exists( 'WooCommerce' ) && is_shop() ) {
 		$current_page_id = wc_get_page_id( 'shop' );
 	} 
 	else {
 		// get page id of individual only
 		if ( is_singular() ) {
-			$current_page_id = $post->ID;
+			return get_queried_object_id();
 		}
 	}
 	return $current_page_id;
@@ -215,6 +240,7 @@ function accodes_css_output_footer() {
 		echo '<!-- Global CSS by Add Custom Codes --> <style type="text/css"> '.wp_strip_all_tags($accodes_global_css).' </style> <!-- End - Global CSS by Add Custom Codes -->';
 	}
 }
+
 /*---------------------------------
 output Global Header Codes
 ----------------*/
@@ -231,6 +257,8 @@ function accodes_header_output() {
 	$taxonomy_header_codes = '';
 	$output = '';
 	
+
+	
 	//check if single page
 	if ( $current_page_id ) {
 		//value is 'on' if checked
@@ -239,6 +267,7 @@ function accodes_header_output() {
 		$get_single_header_codes = get_post_meta( $current_page_id , '_accodes_header_metabox', true );
 		if($get_single_header_codes !='')
 		{
+
 			$single_header_codes = PHP_EOL.'<!-- Single header Scripts by Add Custom Codes -->'. PHP_EOL;
 			$single_header_codes .= $get_single_header_codes;
 			$single_header_codes .= PHP_EOL.'<!-- End of Single header Scripts by Add Custom Codes -->'. PHP_EOL;
@@ -354,9 +383,6 @@ function accodes_footer_output() {
 
 /*----------------
  * Individual pages
- * -----------------------*/
-
-/**-----------------------------
  * Create the meta boxes for Single post, page, product any other custom post type
  ------------------------------------*/
 function _accodes_create_metabox_single() {
@@ -365,6 +391,11 @@ function _accodes_create_metabox_single() {
 	$post_types = array_merge( $post_types, array( 'post', 'page' ) );
 
 	foreach ( $post_types as $post_type ) {
+		
+		if ($post_type === 'accodes_snippets') {
+            continue; 
+        }
+		
 		add_meta_box(
 					'_accodes_metabox', 
 					 'Add Custom Codes by Mak',
@@ -378,9 +409,6 @@ function _accodes_create_metabox_single() {
 }
 add_action( 'add_meta_boxes', '_accodes_create_metabox_single' );
 
-
-
-
 /*-------------------------------
  * Display Meta Boxes for Single
  * ----------------------------*/
@@ -393,7 +421,7 @@ function _accodes_render_metabox() {
 	$hide_header  = get_post_meta( $post->ID, 'accodes_hide_header', true );
 	$hide_footer  = get_post_meta( $post->ID, 'accodes_hide_footer', true );
 	
-	include('single-meta.php');	
+	include plugin_dir_path(__FILE__) . 'single-meta.php';
 	
 }
 
@@ -403,7 +431,7 @@ function _accodes_render_metabox() {
  ---------------------------*/
 function _accodes_save_metabox_single( $post_id, $post ) {
 
-
+	
 	// Verify nonce for security
     if ( !isset($_POST['accodes_meta_nonce']) || !wp_verify_nonce($_POST['accodes_meta_nonce'], 'accodes_save_meta') ) {
         return $post_id;
@@ -423,6 +451,11 @@ function _accodes_save_metabox_single( $post_id, $post ) {
     if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) {
         return $post_id;
     }
+	// Skip revisions
+	if (wp_is_post_revision($post_id)) {
+    return $post_id;
+	}
+
 
 	
 	$allowed_html = [
@@ -439,6 +472,7 @@ function _accodes_save_metabox_single( $post_id, $post ) {
         ];
 	
 	
+
 	$accodes_header_metabox = isset($_POST['_accodes_header_metabox']) 
     ? wp_kses(wp_unslash($_POST['_accodes_header_metabox']), $allowed_html) 
     : '';
@@ -460,7 +494,7 @@ $accodes_footer_metabox = isset($_POST['_accodes_footer_metabox'])
 	update_post_meta( $post->ID, 'accodes_hide_footer', $hide_footer );
 
 }
-add_action( 'save_post', '_accodes_save_metabox_single', 1, 2 );
+add_action( 'save_post', '_accodes_save_metabox_single', 10, 2 );
 
 
 /*
@@ -537,6 +571,24 @@ $accodes_footer_metabox = isset($_POST['_accodes_footer_metabox'])
 add_action('edited_term', 'accodes_save_taxonomy_meta_data');
 add_action('create_term', 'accodes_save_taxonomy_meta_data');
 
+// Global form callback function
+function accodes_global_page_callback() {
+    include plugin_dir_path(__FILE__) . 'global-form.php';
+}
 
 
-?>
+//import export
+include plugin_dir_path(__FILE__) . 'includes/import-export.php';
+
+
+//custom snippets
+include plugin_dir_path(__FILE__) . 'custom-snippets.php';
+
+//about
+function accodes_about_page_callback() {
+    include plugin_dir_path(__FILE__) . 'includes/about-accodes.php';
+}
+
+//deactivation
+include plugin_dir_path(__FILE__) . 'deactivate/deactivate.php';
+

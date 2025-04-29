@@ -25,7 +25,7 @@ function accodes_is_gutenberg_active() {
 						esc_html_e( 'Header Codes', 'add-custom-codes' );
 					?>
 				</label>
-					<?php esc_html_e( "Codes & scripts to add before <em>&lt;/head&gt;</em> section of this page. Use  <em>&lt;script&gt; &lt;/script&gt;</em>, <em>&lt;style&gt; &lt;/style&gt;</em> tags when necessary.", 'add-custom-codes' ); ?>
+					Codes & scripts to add before <em>&lt;/head&gt;</em> section of this page. Use  <em>&lt;script&gt; &lt;/script&gt;</em>, <em>&lt;style&gt; &lt;/style&gt;</em> tags when necessary.
 	</p>
 				<textarea
 					type="text"
@@ -39,7 +39,7 @@ function accodes_is_gutenberg_active() {
                                    name="accodes_hide_header" id="accodes_hide_header"/>
 							<?php esc_html_e( "Hide Global Header Codes on this page", 'add-custom-codes' ); ?>
 				</label>
-				<?php esc_html_e( "Go to <em>Appearance -> Add Custom Codes</em> to see your Global Header Codes", 'add-custom-codes' ); ?>
+				Go to <em>Add Custom Codes -> Global Codes</em> to see your Global Header Codes.
 			</p>
 		</fieldset>
 	
@@ -51,7 +51,7 @@ function accodes_is_gutenberg_active() {
 						esc_html_e( 'Footer Codes', 'add-custom-codes' );
 					?>
 				</label>
-					<?php esc_html_e( "Codes & scripts to add before <em>&lt;/body&gt;</em> section of this page. Use <em>&lt;script&gt; &lt;/script&gt;</em>, <em>&lt;style&gt; &lt;/style&gt;</em> tags when necessary.", 'add-custom-codes' ); ?>
+					Codes & scripts to add before <em>&lt;/body&gt;</em> section of this page. Use <em>&lt;script&gt; &lt;/script&gt;</em>, <em>&lt;style&gt; &lt;/style&gt;</em> tags when necessary.
 	</p>
 				<textarea
 					type="text"
@@ -64,7 +64,7 @@ function accodes_is_gutenberg_active() {
                                    name="accodes_hide_footer" id="accodes_hide_footer"/>
 							<?php esc_html_e( "Hide Global Footer Codes on this page", 'add-custom-codes' ); ?>
                         </label>
-				<?php esc_html_e( "Go to <em>Appearance -> Add Custom Codes</em> to see your Global Footer Codes", 'add-custom-codes' ); ?>
+				Go to <em>Add Custom Codes -> Global Codes</em> to see your Global Footer Codes.
 				</p>
 			</div>
 		</fieldset>
@@ -72,7 +72,7 @@ function accodes_is_gutenberg_active() {
 	</div>
 	<div class="acc-ind-col-2">
 		<p>
-			<em>Add Custom Codes by Mak</em> plugin is <span>Free Forever</span> to use! <a class="acc-link1" href="https://donate.stripe.com/9AQdRz5xJ87c9i0bIS" target="_blank">Donate</a> or <a class="acc-link1" href="https://maktalseo.com/" target="_blank">Hire us for your next project</a> to support us!
+			<em>Add Custom Codes by Mak</em> plugin is <span>Free Forever</span> to use! <a class="acc-link1" href="https://donate.stripe.com/9AQdRz5xJ87c9i0bIS" target="_blank">Donate</a> or <a class="acc-link1" href="https://maktalseo.com/" target="_blank">Hire us for your next project</a> to support!
 		</p>
 	</div>
 	<div style="clear:both;"></div>

@@ -1,37 +1,39 @@
-=== Add Custom Codes - Insert Header, Footer, Custom Code Snippets, Custom CSS, Javascript ===
+=== Add Custom Codes - Insert Header, Footer, Custom PHP Snippets, CSS, Javascript ===
 Contributors: SaifuMak
 Donate link: https://donate.stripe.com/9AQdRz5xJ87c9i0bIS
-Tags: custom css, google analytics, header codes, footer codes, custom codes
+Tags: custom css, php snippets, header codes, footer codes, custom codes
 Requires at least: 6.6.2
-Tested up to: 6.7.2
+Tested up to: 6.8
 Requires PHP: 7.4
-Stable tag: 4.71
+Stable tag: 4.80
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Add custom codes to your wordpress site. A completely free plugin to add Custom CSS, Javascript, Google Analytics, any other codes to your website. 
+Add custom codes to your wordpress site. A completely free plugin to add Custom PHP functions, HTML, CSS, Javascript, any other codes to your website. Option to generate shortcodes.
 
 == Description ==
 
-Add custom codes to your wordpress website. A Light-weight plugin to add custom CSS, Javascript, Google Analytics, Search Console verification tags and other code snippets to your site. Go to <em>Appearance -> Add Custom Codes</em> after installing the plugin.
+Add custom codes to your wordpress website. You can add custom PHP Functions, HTML, custom CSS, Javascript, Google Analytics, Search Console verification tags or other code snippets to your site. 
 
 **Features**
 
 - 100% free wordpress plugin, no paid upgrades needed!
-- Light-weight plugin
-- You can add Custom CSS, Javascript, Google Analytics, Facebook Scripts, Meta Verification Codes, Search console verification and other codes to your wordpress website easily.
-- Easy to use interface.
-- No configuration needed.
-- Syntax highlighter enabled.
-- Add Custom Codes to Header and Footer of your wordpress website.
+- Add PHP Snippets, Custom CSS, Javascript, Google Analytics, Facebook Scripts, Meta Verification Codes, Search console verification and other codes to your wordpress website easily.
+- Generate Shortcodes for HTML Snippets and use it anywhere on the site!
+- Syntax highlighter enabled with Light and Dark Mode Editors
+- Classify snippets using tags
+- Add Notes to Snippets
+- Activate/Inactivate snippets with a single click
+- Auto-deactivate feature for PHP snippets that causes errors.
 - Add Custome Codes globally or on individual posts, pages, products and even on custom post types.
-- Option to select where to put Custom CSS codes: before <em>&lt;/head&gt;</em> or before <em>&lt;/body&gt;</em>
+- Option to select where to put snippets: before <em>&lt;/head&gt;</em> or before <em>&lt;/body&gt;</em> etc.
+- Import/Export Snippets to use on other sites.
 
 == Installation ==
 
 1. Install the plugin through `Plugins -> Add New` or Upload the plugin files to the `/wp-content/plugins/add-custom-codes` directory
 2. Activate 'Add Custom Codes' plugin through the 'Plugins' page in WordPress
-3. Go to 'Appearance -> Custom Codes' to add your codes
+3. Go to 'Dashboard -> Add Custom Codes' to start using
 
 
 == Frequently Asked Questions ==
@@ -58,9 +60,15 @@ Please clear your wordpress cache if you are using a caching plugin or service. 
 
 == Screenshots ==
 
-1. Install the plugin using zip file or from wordpress plugins directory
-2. Go to 'Appearance -> Add Custom codes' to add your Global codes.
-3. Add Custom Codes option when editing page, posts etc. 
+1. Global Custom CSS, Header Codes, Footer Codes
+2. PHP functions
+3. HTML Snippets with auto-generated Shortcode
+4. Javascript snippets
+5. CSS Snippets
+6. Dark Mode Editor
+7. Snippets listing page
+8. Snippet auto-deactivation feature
+9. Header and Footer codes for Pages, Posts, Taxonomies etc.
 
 == Changelog ==
 
@@ -107,6 +115,13 @@ Please clear your wordpress cache if you are using a caching plugin or service. 
 = 4.71 =
 * Fixed a bug with css inputs
 
+= 4.80 =
+* Major update with a fantastic feature: Snippets
+* Add PHP Functions, HTML, CSS, Javascript as snippets
+* Tags and Notes for Snippets
+* Light Mode or Dark Mode editor
+* Import/Export Snippets
+
 == Upgrade Notice ==
 
 = 1.0 =
@@ -144,3 +159,6 @@ Bug fixes & improvements. Option to add Custom Codes to taxonomy pages.
 
 = 4.71 =
 Fixed a bug with css inputs
+
+= 4.80 =
+Introduces a new feature called "Snippets". Backup your site before doing the update.

@@ -33,9 +33,9 @@ You can add custom css (global) codes below. DO NOT INCLUDE <em>&lt;style&gt;</e
                 <label for="accodes_global_css_on_footer" class="accodes-checkbox-label">
                             <input type="checkbox" <?php echo checked( $css_on_footer, 1, false ); ?>
                                    name="accodes_global_css_on_footer" id="accodes_global_css_on_footer" value="1"/>
-							<?php esc_html_e( "Insert Custom CSS before <em>&lt;/body&gt;</em> of website.", 'add-custom-codes' ); ?>
+							Insert Custom CSS before <em>&lt;/body&gt;</em> of website.
 				</label><br/>
-				<?php esc_html_e( "By default, Custom CSS will be added before <em>&lt;/head&gt;</em> section of your website.", 'add-custom-codes' ); ?>
+				By default, the plugin adds Custom CSS before <em>&lt;/head&gt;</em> section of your website.
 			</p>
 			<?php submit_button(); ?>
 			

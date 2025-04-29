@@ -1,0 +1,51 @@
+/* About Page Styling */
+.accodes-about-wrap {
+    max-width: 900px;
+    margin: 30px auto;
+    padding: 10px;
+    font-size: 15px;
+    line-height: 1.7;
+    color: #333;
+}
+
+.accodes-about-wrap h1 {
+    font-size: 28px;
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+.accodes-card {
+    background: #fff;
+    border: 1px solid #e1e1e1;
+    padding: 25px;
+    margin-bottom: 25px;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+.accodes-card p
+{
+	font-size:15px;
+}
+.accodes-card h2 {
+    font-size: 20px;
+    margin-top: 0;
+    margin-bottom: 15px;
+}
+
+.accodes-faq {
+    padding-left: 18px;
+}
+
+.accodes-faq li {
+    margin-bottom: 10px;
+}
+
+.accodes-about-wrap .button {
+    margin-right: 10px;
+    margin-top: 10px;
+}
+.accodes_donate.donate-strip
+{
+	background: #9220c5;
+  color: #fff !important;
+}
