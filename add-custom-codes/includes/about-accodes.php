@@ -1,3 +1,11 @@
+<?php 
+
+// If this file was called directly, abort.
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
+?>
 <div class="accodes-about-wrap">
     
     <div class="accodes-card">

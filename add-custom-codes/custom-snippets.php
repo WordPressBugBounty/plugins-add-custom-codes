@@ -1,4 +1,9 @@
 <?php
+
+// If this file was called directly, abort.
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
 //Register post type
 function accodes_register_snippets_cpt() {
     register_post_type('accodes_snippets', array(
@@ -19,8 +24,25 @@ function accodes_register_snippets_cpt() {
         ),
         'public' => false,
         'show_ui' => true,
-        'show_in_menu' => true, 
+        'show_in_menu' => true,
+        // Restrict management of snippets to administrators (or roles with manage_options)
         'capability_type' => 'post',
+        'capabilities' => array(
+            'edit_post'              => 'manage_options',
+            'read_post'              => 'manage_options',
+            'delete_post'            => 'manage_options',
+            'edit_posts'             => 'manage_options',
+            'edit_others_posts'      => 'manage_options',
+            'publish_posts'          => 'manage_options',
+            'read_private_posts'     => 'manage_options',
+            'create_posts'           => 'manage_options',
+            'delete_posts'           => 'manage_options',
+            'delete_private_posts'   => 'manage_options',
+            'delete_published_posts' => 'manage_options',
+            'delete_others_posts'    => 'manage_options',
+            'edit_private_posts'     => 'manage_options',
+            'edit_published_posts'   => 'manage_options',
+        ),
         'supports' => array('title'),
         'menu_icon' => plugins_url('add-custom-codes/assets/images/accodes-menu-icon.svg'), 
         'menu_position' => 60,
@@ -128,7 +150,7 @@ function accodes_render_snippet_editor($post) {
 	if ($active === '0' && $post->post_status !== 'publish') {
    		 $active = '1';
 	}
-	$notes = get_post_meta($post->ID, '_accodes_snippet_notes', true);
+    $notes = get_post_meta($post->ID, '_accodes_snippet_notes', true);
 	$tags_raw = get_post_meta($post->ID, '_accodes_snippet_tags', true);
 	$tags_array = $tags_raw ? explode(',', $tags_raw) : [];
 	
@@ -148,8 +170,29 @@ function accodes_render_snippet_editor($post) {
 		</script>";
 		}
 
+    // Provide safe default templates only when empty
+    if (trim((string) $content) === '') {
+        switch ($language) {
+            case 'javascript':
+                $content = '/* Add your scripts here. You can remove example code */' . "\n" . 'console.log("code loaded.");' . "\n";
+                break;
+            case 'css':
+                $content = '/* Your CSS here */' . "\n" . '.selector {' . "\n\t\n}" . "\n";
+                break;
+            case 'htmlmixed':
+                $content = '<!-- Add your HTML here. You can remove example code-->' . "\n" . '<div></div>' . "\n";
+                break;
+            case 'php':
+            default:
+                // No explicit PHP open/close tags; runner evaluates raw PHP body.
+                $content = '// Your PHP here' . "\n";
+                break;
+        }
+    }
+
     ?>
     <div class="postbox accodes-meta-wrapper">
+        <?php wp_nonce_field('accodes_save_snippet_meta', 'accodes_snippet_meta_nonce'); ?>
         <div class="accodes-group above-accodes-tab">
             <div class="accodes-group accodes-theme-toggle" style="display: flex; justify-content: flex-end; align-items: center;">
 				<label class="accodes-switch">
@@ -260,48 +303,100 @@ function accodes_render_snippet_editor($post) {
 add_action('save_post', function ($post_id) {
     if (get_post_type($post_id) !== 'accodes_snippets') return;
 
-    $code     = $_POST['accodes_code_editor'] ?? '';
-    $language = $_POST['accodes_snippet_language'] ?? '';
+    if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) return;
+    if (wp_is_post_revision($post_id)) return;
+
+    $nonce = isset($_POST['accodes_snippet_meta_nonce']) ? sanitize_text_field( wp_unslash($_POST['accodes_snippet_meta_nonce']) ) : '';
+    if (!$nonce || !wp_verify_nonce( $nonce, 'accodes_save_snippet_meta')) return;
+    if (!current_user_can('edit_post', $post_id)) return;
+
+    // Raw code is stored by design; validated on execution and escaped on output where applicable.
+    // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+    $code     = isset($_POST['accodes_code_editor']) ? wp_unslash($_POST['accodes_code_editor']) : '';
+    $language = isset($_POST['accodes_snippet_language']) ? sanitize_text_field( wp_unslash($_POST['accodes_snippet_language']) ) : '';
     $active   = isset($_POST['accodes_snippet_active']) ? '1' : '0';
 
     // Save core meta
-    update_post_meta($post_id, '_accodes_code', wp_unslash($code));
-    update_post_meta($post_id, '_accodes_snippet_language', sanitize_text_field($language));
-    update_post_meta($post_id, '_accodes_snippet_location', sanitize_text_field($_POST['accodes_snippet_location'] ?? ''));
-    update_post_meta($post_id, '_accodes_snippet_notes', sanitize_textarea_field($_POST['accodes_snippet_notes'] ?? ''));
+    update_post_meta($post_id, '_accodes_code', $code);
+    update_post_meta($post_id, '_accodes_snippet_language', $language);
+    $location = isset($_POST['accodes_snippet_location']) ? sanitize_text_field( wp_unslash($_POST['accodes_snippet_location']) ) : '';
+    $notes    = isset($_POST['accodes_snippet_notes']) ? sanitize_textarea_field( wp_unslash($_POST['accodes_snippet_notes']) ) : '';
+    update_post_meta($post_id, '_accodes_snippet_location', $location);
+    update_post_meta($post_id, '_accodes_snippet_notes', $notes);
     update_post_meta($post_id, '_accodes_snippet_active', $active);
 
     // Save tags
-    if (isset($_POST['accodes_tags']) && is_array($_POST['accodes_tags'])) {
-        $tags = array_map('sanitize_text_field', $_POST['accodes_tags']);
+    // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Collected then sanitized per-item below
+    $raw_tags_input = isset($_POST['accodes_tags']) ? wp_unslash($_POST['accodes_tags']) : null;
+    if (is_array($raw_tags_input)) {
+        $raw_tags = array_map('strval', $raw_tags_input);
+        $tags = array_map('sanitize_text_field', $raw_tags);
         wp_set_post_terms($post_id, $tags, 'accodes_tag');
     }
 	if ($language === 'php') {
 		delete_post_meta($post_id, '_accodes_snippet_error'); // clear old errors
 	}
+    // Clear cached snippet lists for all locations when a snippet is saved.
+    if ( function_exists( 'set_transient' ) ) {
+        $locations = [ 'site', 'admin', 'frontend', 'shortcode', 'head', 'footer' ];
+        foreach ( $locations as $loc ) {
+            delete_transient( 'accodes_snippet_ids_' . md5( (string) $loc ) );
+        }
+    }
 	
 });
 
 function accodes_inject_snippets($location) {
-    $args = [
-        'post_type'      => 'accodes_snippets',
-        'post_status'    => 'publish',
-        'posts_per_page' => -1,
-        'meta_query'     => [
-            [
-                'key'   => '_accodes_snippet_active',
-                'value' => '1',
+    // Use a short-lived transient to cache snippet IDs per location and avoid expensive meta_query on every request.
+    $cache_key = 'accodes_snippet_ids_' . md5( (string) $location );
+    $ids = get_transient( $cache_key );
+    if ( false === $ids ) {
+        // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- Results are cached in a transient to avoid running this meta_query on every request.
+        $query_args = [
+            'post_type'      => 'accodes_snippets',
+            'post_status'    => 'publish',
+            'posts_per_page' => -1,
+            'fields'         => 'ids', // only IDs to keep the query light
+            'no_found_rows'  => true,
+            'meta_query'     => [
+                [
+                    'key'   => '_accodes_snippet_active',
+                    'value' => '1',
+                ],
+                [
+                    'key'   => '_accodes_snippet_location',
+                    'value' => $location,
+                ],
             ],
-            [
-                'key'   => '_accodes_snippet_location',
-                'value' => $location,
-            ]
-        ],
-    ];
+        ];
 
-    $snippets = get_posts($args);
+        $ids = get_posts( $query_args );
+        if ( ! is_array( $ids ) ) {
+            $ids = [];
+        }
+        // Cache for 5 minutes
+        set_transient( $cache_key, $ids, 5 * MINUTE_IN_SECONDS );
+    }
+
+    if ( empty( $ids ) ) {
+        return;
+    }
+
+    // Fetch posts by IDs preserving order
+    $snippets = get_posts([
+        'post_type' => 'accodes_snippets',
+        'post_status' => 'publish',
+        'posts_per_page' => count( $ids ),
+        'post__in' => $ids,
+        'orderby' => 'post__in',
+        'no_found_rows' => true,
+    ]);
 
     foreach ($snippets as $snippet) {
+    // Only run snippets created by users with administrative capability
+    if (!user_can((int) $snippet->post_author, 'manage_options')) {
+        continue;
+    }
     $language = get_post_meta($snippet->ID, '_accodes_snippet_language', true);
     $code     = get_post_meta($snippet->ID, '_accodes_code', true);
 
@@ -312,9 +407,10 @@ function accodes_inject_snippets($location) {
                 if (!is_admin()) {
                     $cleaned = preg_replace('/^\s*<\?(php)?/', '', trim($code));
                     try {
-                        eval($cleaned);
-                        delete_post_meta($snippet->ID, '_accodes_snippet_error'); // clear old errors
-                    } catch (Throwable $e) {
+                        // phpcs:ignore WordPress.Security.EvalDetected -- Intentionally executing admin-authored PHP snippets; access is restricted to administrators (snippet authors must have 'manage_options').
+                        eval( $cleaned );
+                        delete_post_meta( $snippet->ID, '_accodes_snippet_error' ); // clear old errors
+                    } catch ( Throwable $e ) {
                         // Auto-deactivate the snippet
                         update_post_meta($snippet->ID, '_accodes_snippet_active', '0');
                         // Log error
@@ -328,15 +424,19 @@ function accodes_inject_snippets($location) {
         break;
 
         case 'css':
-            echo "<style>\n" . trim($code) . "\n</style>\n";
+            // Intentionally output admin-authored CSS without HTML-encoding so quotes stay intact.
+            // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Intentionally outputting admin-authored CSS; restricted to manage_options.
+            echo "<style>\n" . trim( (string) $code ) . "\n</style>\n";
             break;
 
         case 'javascript':
-            echo "<script>\n" . trim($code) . "\n</script>\n";
+            // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Intentionally outputting admin-authored JS for a code injection plugin; restricted to manage_options.
+            echo "<script>\n" . trim( (string) $code ) . "\n</script>\n";
             break;
 
         case 'htmlmixed':
         default:
+            // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Intentionally outputting admin-authored HTML; restricted to manage_options and sanitized for non-privileged.
             echo $code;
             break;
     }
@@ -377,7 +477,7 @@ function accodes_snippet_column_content($column, $post_id) {
                 break;
         }
 
-        echo $badge;
+        echo wp_kses( $badge, [ 'span' => [ 'class' => [] ] ] );
     }
 	if ($column === 'accodes_health') {
         $error = get_post_meta($post_id, '_accodes_snippet_error', true);
@@ -389,10 +489,10 @@ function accodes_snippet_column_content($column, $post_id) {
     }
     if ($column === 'accodes_status') {
         $active = get_post_meta($post_id, '_accodes_snippet_active', true);
-        $checked = $active == '1' ? 'checked' : '';
+        $is_checked = ($active === '1');
         echo '
             <label class="accodes-switch">
-                <input type="checkbox" data-id="' . $post_id . '" class="accodes-toggle-snippet" ' . $checked . '>
+                <input type="checkbox" data-id="' . esc_attr( (string) $post_id ) . '" class="accodes-toggle-snippet"' . ( $is_checked ? ' checked="checked"' : '' ) . '>
                 <span class="slider"></span>
             </label>
         ';
@@ -408,10 +508,14 @@ add_action('manage_accodes_snippets_posts_custom_column', 'accodes_snippet_colum
 add_action('wp_ajax_accodes_toggle_snippet_status', function () {
     check_ajax_referer('accodes_toggle_snippet');
 
-    $post_id = intval($_POST['post_id'] ?? 0);
-    $active = $_POST['active'] === '1' ? '1' : '0';
+    $post_id    = isset($_POST['post_id']) ? intval( wp_unslash($_POST['post_id']) ) : 0;
+    $active_raw = isset($_POST['active']) ? sanitize_text_field( wp_unslash($_POST['active']) ) : null;
+    $active     = ($active_raw === '1') ? '1' : '0';
 
     if ($post_id && get_post_type($post_id) === 'accodes_snippets') {
+        if (!current_user_can('edit_post', $post_id)) {
+            wp_send_json_error(['message' => 'Permission denied'], 403);
+        }
         update_post_meta($post_id, '_accodes_snippet_active', $active);
         wp_send_json_success(['status' => $active]);
     }
@@ -426,6 +530,9 @@ add_action('init', function () {
         $post_id = intval($atts['id']);
 
         if (!$post_id || get_post_type($post_id) !== 'accodes_snippets') return '';
+
+        $snippet = get_post($post_id);
+        if (!$snippet || !user_can((int) $snippet->post_author, 'manage_options')) return '';
 
         $location = get_post_meta($post_id, '_accodes_snippet_location', true);
         $active   = get_post_meta($post_id, '_accodes_snippet_active', true);

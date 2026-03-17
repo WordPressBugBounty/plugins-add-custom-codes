@@ -2,23 +2,17 @@
 /**
  * Plugin Name: Add Custom Codes - Insert Header, Footer, Custom Code Snippets
  * Description: Light-weight plugin to add Custom PHP Functions, HTML, CSS, Javascript, Google Analytics, Search console verification tags and other custom code snippets to your Wordpress website. 
- * Version: 4.80
+ * Version: 5.0
  * Author: Saifudheen Mak
  * Author URI: https://maktalseo.com
  * License: GPL2
  * Text Domain: add-custom-codes
  */
  
-// If this file was called directly, abort.
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
-
- add_action( 'init', 'accodes_load_textdomain' );
-function accodes_load_textdomain() {
-  load_plugin_textdomain( 'add-custom-codes', false, dirname( plugin_basename( __FILE__ ) ) . '/languages' ); 
-}
-
+ 
 /*----------------
 plugin links 'Plugins' page
 ------------------*/
@@ -26,7 +20,7 @@ add_filter( 'plugin_action_links_' . plugin_basename(__FILE__), 'accodes_action_
  
 function accodes_action_links ( $actions ) {
    $mylinks = array(
-      '<a href="' . admin_url( 'edit.php?post_type=accodes_snippets&page=accodes-about' ) . '">Donate us</a>',
+		'<a href="' . esc_url( admin_url( 'edit.php?post_type=accodes_snippets&page=accodes-about' ) ) . '">Donate us</a>',
    );
    $actions = array_merge( $actions, $mylinks );
    return $actions;
@@ -72,7 +66,7 @@ function accodes_codemirror_scripts($hook) {
 	wp_register_style( 'accodes-css', plugins_url( 'add-custom-codes/assets/css/style43.css' ), '', '4.259' );
 	wp_enqueue_style( 'accodes-css' );
 	
-	wp_register_script('accodes-js', plugins_url('add-custom-codes/assets/js/scripts.js'), ['jquery', 'jquery-ui-autocomplete'], '4.79', true);
+	wp_register_script('accodes-js', plugins_url('add-custom-codes/assets/js/scripts.js'), ['jquery', 'jquery-ui-autocomplete'], '4.82', true);
 	wp_enqueue_script( 'accodes-js' );
 	
 	// Fetch tags for autocomplete
@@ -106,7 +100,7 @@ add_action('admin_enqueue_scripts', function ($hook) {
 
 
 function accodes_settings_page() {
-	if (!current_user_can('administrator')) {
+	if (!current_user_can('manage_options')) {
         wp_die(esc_html__('You do not have sufficient permissions to access this page.', 'add-custom-codes'));
     }
 
@@ -174,7 +168,7 @@ function accodes_settings() {
 /*----------------
  functions
 ---------------*/
-function get_current_page_id()
+function accodes_get_current_page_id()
 {
 	global $post;
 	$current_page_id = false;
@@ -190,20 +184,20 @@ function get_current_page_id()
 	return $current_page_id;
 }
 
-function get_current_taxonomy_id() {
-    if (is_tax() || is_category() || is_tag()) {
-        $term = get_queried_object();
-        if (!empty($term) && !is_wp_error($term)) {
-            return $term->term_id;
-        }
-    }
-    return false;
+function accodes_get_current_taxonomy_id() {
+	if (is_tax() || is_category() || is_tag()) {
+		$term = get_queried_object();
+		if (!empty($term) && !is_wp_error($term)) {
+			return $term->term_id;
+		}
+	}
+	return false;
 }
 
 /*---------------------------------
 output Global CSS
 ----------------*/
-function get_global_custom_css()
+function accodes_get_global_custom_css()
 {
 		$accodes_global_css = '';
 		$options  = get_option( 'custom-css-codes-input' );
@@ -215,18 +209,21 @@ function get_global_custom_css()
 }
 
 
-add_action( 'wp_head', 'accodes_css_output_header' );
 function accodes_css_output_header() {
 	//check if global css to be added before footer
 	$css_on_footer = (bool) get_option('accodes_global_css_on_footer', false);
 	//put css in footer not ticked
 	if(!$css_on_footer)
 	{
-		$accodes_global_css = get_global_custom_css();
-		//escape
-		echo '<!-- Global CSS by Add Custom Codes --> <style type="text/css"> '.wp_strip_all_tags($accodes_global_css).' </style> <!-- End - Global CSS by Add Custom Codes -->';
+		$accodes_global_css = accodes_get_global_custom_css();
+		// Intentionally output admin-provided CSS without HTML-encoding so quotes stay intact.
+		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Intentionally outputting admin-provided CSS.
+		echo '<!-- Global CSS by Add Custom Codes --> <style type="text/css">'. PHP_EOL . $accodes_global_css . PHP_EOL . '</style> <!-- End - Global CSS by Add Custom Codes -->';
 	}
 }
+
+// Hook global CSS output into the head
+add_action( 'wp_head', 'accodes_css_output_header' );
 
 add_action( 'wp_footer', 'accodes_css_output_footer' );
 function accodes_css_output_footer() {
@@ -235,9 +232,10 @@ function accodes_css_output_footer() {
 	//put css in footer ticked
 	if($css_on_footer)
 	{
-		$accodes_global_css = get_global_custom_css();
-		//escape
-		echo '<!-- Global CSS by Add Custom Codes --> <style type="text/css"> '.wp_strip_all_tags($accodes_global_css).' </style> <!-- End - Global CSS by Add Custom Codes -->';
+		$accodes_global_css = accodes_get_global_custom_css();
+		// Intentionally output admin-provided CSS without HTML-encoding so quotes stay intact.
+		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Intentionally outputting admin-provided CSS.
+		echo '<!-- Global CSS by Add Custom Codes --> <style type="text/css">'. PHP_EOL . $accodes_global_css . PHP_EOL . '</style> <!-- End - Global CSS by Add Custom Codes -->';
 	}
 }
 
@@ -248,8 +246,8 @@ add_action( 'wp_head', 'accodes_header_output' );
 function accodes_header_output() {
 	
 	$hide_global_header = '';
-	$current_page_id = get_current_page_id();
-	$current_taxonomy_id =  get_current_taxonomy_id();
+	$current_page_id = accodes_get_current_page_id();
+	$current_taxonomy_id =  accodes_get_current_taxonomy_id();
 	$global_header_codes ='';
 	$get_single_header_codes = '';
 	$single_header_codes = '';
@@ -306,7 +304,7 @@ function accodes_header_output() {
 	
 	if($output !='')
 	{
-		//escape
+		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Intentionally outputting admin-provided header codes.
 		echo $output;
 	}
 	
@@ -321,8 +319,8 @@ add_action( 'wp_footer', 'accodes_footer_output' );
 function accodes_footer_output() {
 	
 	$hide_global_footer = '';
-	$current_page_id = get_current_page_id();
-	$current_taxonomy_id = get_current_taxonomy_id();
+	$current_page_id = accodes_get_current_page_id();
+	$current_taxonomy_id = accodes_get_current_taxonomy_id();
 	$global_footer_codes ='';
 	$single_footer_codes = '';
 	$taxonomy_footer_codes = '';
@@ -373,7 +371,7 @@ function accodes_footer_output() {
 	
 	if($output !='')
 	{
-		//escape
+		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Intentionally outputting admin-provided footer codes.
 		echo $output;
 	}
 	
@@ -385,34 +383,39 @@ function accodes_footer_output() {
  * Individual pages
  * Create the meta boxes for Single post, page, product any other custom post type
  ------------------------------------*/
-function _accodes_create_metabox_single() {
+function accodes_create_metabox_single() {
 	
 	$post_types = get_post_types( '', 'names' );
 	$post_types = array_merge( $post_types, array( 'post', 'page' ) );
+
+	$can_code = current_user_can('unfiltered_html') || current_user_can('manage_options');
 
 	foreach ( $post_types as $post_type ) {
 		
 		if ($post_type === 'accodes_snippets') {
             continue; 
         }
+		if (!$can_code) {
+			continue;
+		}
 		
 		add_meta_box(
-					'_accodes_metabox', 
-					 'Add Custom Codes by Mak',
-					 '_accodes_render_metabox', 
-					 $post_type, 
-					'normal', 
-					 'default'
-					);
+			    '_accodes_metabox', 
+			     'Add Custom Codes by Mak',
+			     'accodes_render_metabox', 
+			     $post_type, 
+			    'normal', 
+			     'default'
+			    );
 	}
 
 }
-add_action( 'add_meta_boxes', '_accodes_create_metabox_single' );
+add_action( 'add_meta_boxes', 'accodes_create_metabox_single' );
 
 /*-------------------------------
  * Display Meta Boxes for Single
  * ----------------------------*/
-function _accodes_render_metabox() {
+function accodes_render_metabox() {
 	// Variables
 	global $post; // Get the current post data
 	$header_script = get_post_meta( $post->ID, '_accodes_header_metabox', true ); // Get the saved values
@@ -429,13 +432,14 @@ function _accodes_render_metabox() {
 /*-------------------------
  * update data on post save - Single
  ---------------------------*/
-function _accodes_save_metabox_single( $post_id, $post ) {
+function accodes_save_metabox_single( $post_id, $post ) {
 
 	
 	// Verify nonce for security
-    if ( !isset($_POST['accodes_meta_nonce']) || !wp_verify_nonce($_POST['accodes_meta_nonce'], 'accodes_save_meta') ) {
-        return $post_id;
-    }
+	$acc_meta_nonce = isset($_POST['accodes_meta_nonce']) ? sanitize_text_field( wp_unslash($_POST['accodes_meta_nonce']) ) : '';
+	if ( !$acc_meta_nonce || !wp_verify_nonce($acc_meta_nonce, 'accodes_save_meta') ) {
+		return $post_id;
+	}
 	
 	// Verify user has permission to edit post
 	if ( !current_user_can( 'edit_post', $post->ID )) {
@@ -458,18 +462,36 @@ function _accodes_save_metabox_single( $post_id, $post ) {
 
 
 	
-	$allowed_html = [
-            'script' => ['type' => [], 'src' => [], 'async' => [], 'defer' => []],
-            'style' => ['type' => []],
-            'meta' => ['name' => [], 'content' => [], 'charset' => []],
-            'link' => ['rel' => [], 'href' => [], 'type' => []],
-            'div' => ['class' => [], 'id' => [], 'style' => []],
-            'span' => ['class' => [], 'style' => []],
-            'p' => ['class' => [], 'style' => []],
-            'a' => ['href' => [], 'title' => [], 'target' => []],
-            'img' => ['src' => [], 'alt' => [], 'width' => [], 'height' => []],
-            'iframe' => ['src' => [], 'width' => [], 'height' => [], 'frameborder' => [], 'allowfullscreen' => []],
-        ];
+	$privileged = current_user_can('unfiltered_html') || current_user_can('manage_options');
+	if ($privileged) {
+		$allowed_html = [
+			'script' => ['type' => [], 'src' => [], 'async' => [], 'defer' => []],
+			'style' => ['type' => []],
+			'meta' => ['name' => [], 'content' => [], 'charset' => []],
+			'link' => ['rel' => [], 'href' => [], 'type' => []],
+			'div' => ['class' => [], 'id' => [], 'style' => []],
+			'span' => ['class' => [], 'style' => []],
+			'p' => ['class' => [], 'style' => []],
+			'a' => ['href' => [], 'title' => [], 'target' => []],
+			'img' => ['src' => [], 'alt' => [], 'width' => [], 'height' => []],
+			'iframe' => ['src' => [], 'width' => [], 'height' => [], 'frameborder' => [], 'allowfullscreen' => []],
+		];
+	} else {
+		// Restrictive for non-privileged users (no scripts/styles/iframes/meta/link)
+		$allowed_html = [
+			'div' => ['class' => [], 'id' => [], 'style' => []],
+			'span' => ['class' => [], 'style' => []],
+			'p' => ['class' => [], 'style' => []],
+			'a' => ['href' => [], 'title' => [], 'target' => []],
+			'img' => ['src' => [], 'alt' => [], 'width' => [], 'height' => []],
+			'ul' => ['class' => [], 'style' => []],
+			'ol' => ['class' => [], 'style' => []],
+			'li' => ['class' => [], 'style' => []],
+			'strong' => [],
+			'em' => [],
+			'br' => [],
+		];
+	}
 	
 	
 
@@ -494,26 +516,28 @@ $accodes_footer_metabox = isset($_POST['_accodes_footer_metabox'])
 	update_post_meta( $post->ID, 'accodes_hide_footer', $hide_footer );
 
 }
-add_action( 'save_post', '_accodes_save_metabox_single', 10, 2 );
+add_action( 'save_post', 'accodes_save_metabox_single', 10, 2 );
 
 
 /*
  * single meta end
  * -----------------------------------------------*/
 
-function get_current_term_id() {
-    if (isset($_GET['tag_ID'])) {
-        return intval($_GET['tag_ID']);
-    }
-    return 0;
+function accodes_get_current_term_id() {
+	// Prefer queried term object over direct access to $_GET['tag_ID']
+	$term = get_queried_object();
+	return ( $term && isset( $term->term_id ) ) ? absint( $term->term_id ) : 0;
 }
 
 // Register meta box
 function accodes_render_taxonomy_meta_box() {
    $taxonomies = get_taxonomies(); 
     foreach ($taxonomies as $taxonomy) {
-        add_action("{$taxonomy}_edit_form", function($tag) use ($taxonomy) {      
-			$term_id = get_current_term_id();	
+		add_action("{$taxonomy}_edit_form", function($tag) use ($taxonomy) {
+			if (!current_user_can('unfiltered_html') && !current_user_can('manage_options')) {
+				return;
+			}
+			$term_id = isset($tag->term_id) ? (int) $tag->term_id : 0; 
 			$header_script = get_term_meta( $term_id, '_accodes_header_metabox', true ); 
 			$footer_script = get_term_meta( $term_id, '_accodes_footer_metabox', true ); 
 			$hide_header  = get_term_meta( $term_id, 'accodes_hide_header', true );
@@ -529,22 +553,44 @@ add_action('admin_init', 'accodes_render_taxonomy_meta_box');
 function accodes_save_taxonomy_meta_data($term_id) {
   	
 	 // Verify nonce for security
-    if (!isset($_POST['accodes_tax_meta_nonce']) || !wp_verify_nonce($_POST['accodes_tax_meta_nonce'], 'accodes_save_tax_meta')) {
-        return $term_id;
-    }
+	$tax_meta_nonce = isset($_POST['accodes_tax_meta_nonce']) ? sanitize_text_field( wp_unslash($_POST['accodes_tax_meta_nonce']) ) : '';
+	if (!$tax_meta_nonce || !wp_verify_nonce($tax_meta_nonce, 'accodes_save_tax_meta')) {
+		return $term_id;
+	}
+
+	if (!current_user_can('edit_term', $term_id)) {
+		return $term_id;
+	}
 	
-	$allowed_html = [
-            'script' => ['type' => [], 'src' => [], 'async' => [], 'defer' => []],
-            'style' => ['type' => []],
-            'meta' => ['name' => [], 'content' => [], 'charset' => []],
-            'link' => ['rel' => [], 'href' => [], 'type' => []],
-            'div' => ['class' => [], 'id' => [], 'style' => []],
-            'span' => ['class' => [], 'style' => []],
-            'p' => ['class' => [], 'style' => []],
-            'a' => ['href' => [], 'title' => [], 'target' => []],
-            'img' => ['src' => [], 'alt' => [], 'width' => [], 'height' => []],
-            'iframe' => ['src' => [], 'width' => [], 'height' => [], 'frameborder' => [], 'allowfullscreen' => []],
-        ];
+	$privileged = current_user_can('unfiltered_html') || current_user_can('manage_options');
+	if ($privileged) {
+		$allowed_html = [
+			'script' => ['type' => [], 'src' => [], 'async' => [], 'defer' => []],
+			'style' => ['type' => []],
+			'meta' => ['name' => [], 'content' => [], 'charset' => []],
+			'link' => ['rel' => [], 'href' => [], 'type' => []],
+			'div' => ['class' => [], 'id' => [], 'style' => []],
+			'span' => ['class' => [], 'style' => []],
+			'p' => ['class' => [], 'style' => []],
+			'a' => ['href' => [], 'title' => [], 'target' => []],
+			'img' => ['src' => [], 'alt' => [], 'width' => [], 'height' => []],
+			'iframe' => ['src' => [], 'width' => [], 'height' => [], 'frameborder' => [], 'allowfullscreen' => []],
+		];
+	} else {
+		$allowed_html = [
+			'div' => ['class' => [], 'id' => [], 'style' => []],
+			'span' => ['class' => [], 'style' => []],
+			'p' => ['class' => [], 'style' => []],
+			'a' => ['href' => [], 'title' => [], 'target' => []],
+			'img' => ['src' => [], 'alt' => [], 'width' => [], 'height' => []],
+			'ul' => ['class' => [], 'style' => []],
+			'ol' => ['class' => [], 'style' => []],
+			'li' => ['class' => [], 'style' => []],
+			'strong' => [],
+			'em' => [],
+			'br' => [],
+		];
+	}
 	
 	
 	//get value of meta boxes

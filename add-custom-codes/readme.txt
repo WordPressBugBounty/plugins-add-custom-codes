@@ -3,13 +3,13 @@ Contributors: SaifuMak
 Donate link: https://donate.stripe.com/9AQdRz5xJ87c9i0bIS
 Tags: custom css, php snippets, header codes, footer codes, custom codes
 Requires at least: 6.6.2
-Tested up to: 6.8
+Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 4.80
+Stable tag: 5.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Add custom codes to your wordpress site. A completely free plugin to add Custom PHP functions, HTML, CSS, Javascript, any other codes to your website. Option to generate shortcodes.
+A completely free plugin to add Custom PHP functions, HTML, CSS, Javascript, any other custom codes to your wordpress website. Even generate shortcodes!
 
 == Description ==
 
@@ -115,12 +115,16 @@ Please clear your wordpress cache if you are using a caching plugin or service. 
 = 4.71 =
 * Fixed a bug with css inputs
 
-= 4.80 =
+= 4.8 =
 * Major update with a fantastic feature: Snippets
 * Add PHP Functions, HTML, CSS, Javascript as snippets
 * Tags and Notes for Snippets
 * Light Mode or Dark Mode editor
 * Import/Export Snippets
+
+= 5.0 =
+* Major update with security and vulnerability issues fixed
+* Added guide text to snippets for beginners to easily understand the plugin.
 
 == Upgrade Notice ==
 
@@ -160,5 +164,8 @@ Bug fixes & improvements. Option to add Custom Codes to taxonomy pages.
 = 4.71 =
 Fixed a bug with css inputs
 
-= 4.80 =
+= 4.8 =
 Introduces a new feature called "Snippets". Backup your site before doing the update.
+
+= 5.0 =
+Fixed security and vulnerability issues. Backup your website before upgrading.

@@ -5,12 +5,12 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 ?>
 	
-<?php $taxonomy_obj = get_taxonomy($taxonomy);
-if ($taxonomy_obj) {
-    $taxonomy_name = $taxonomy_obj->labels->singular_name;
+<?php $accodes_taxonomy_obj = get_taxonomy( $taxonomy );
+if ( $accodes_taxonomy_obj ) {
+	$accodes_taxonomy_name = $accodes_taxonomy_obj->labels->singular_name;
 }  ?>
 <div class="acc-ind-col-1 accodes-taxonomy-edit">
-	<?php echo "<h4>Add custom codes to this ".esc_html($taxonomy_name)."</h4>"; ?>
+	<?php echo "<h4>Add custom codes to this ".esc_html( $accodes_taxonomy_name )."</h4>"; ?>
 	<?php wp_nonce_field('accodes_save_tax_meta', 'accodes_tax_meta_nonce'); ?>
 	
 		<fieldset class="accodes_ind_field">

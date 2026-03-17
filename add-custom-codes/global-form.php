@@ -4,9 +4,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 ?>
-<?php if (isset($_GET['settings-updated'])) : ?>
+<?php
+// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- value comes from Settings API redirect after a verified save.
+if ( isset( $_GET['settings-updated'] ) && sanitize_text_field( wp_unslash( $_GET['settings-updated'] ) ) ) : ?>
 	<div class="notice notice-success is-dismissible"><p><?php esc_html_e('Changes saved! Please clear your cache if the changes are not reflected on the website.', 'add-custom-codes'); ?></p></div>
-<?php endif ?>
+<?php endif; ?>
 
 <div class="wrap">
 <h2><?php esc_html_e( 'Add Custom Codes by Mak', 'add-custom-codes' ) ?></h2>
@@ -18,21 +20,21 @@ if ( ! defined( 'ABSPATH' ) ) {
 			<?php do_settings_sections( 'accodes-settings-group' ); ?>
 			
 			<?php 
-			$global_css = "";
-			$global_css = get_option('custom-css-codes-input'); 
+			$accodes_global_css = "";
+			$accodes_global_css = get_option('custom-css-codes-input'); 
 			?>
 			<p><label for="custom-css-codes-input" class="accodes-label green-label"><?php esc_html_e( 'Custom CSS (Global)', 'add-custom-codes' ) ?></label><br/>
 You can add custom css (global) codes below. DO NOT INCLUDE <em>&lt;style&gt;</em> and <em>&lt;/style&gt;</em> tags:</p>    
-				<textarea class="codemirror-accodes-css" id="custom-css-codes-input" name="custom-css-codes-input"><?php echo esc_attr( $global_css ); ?></textarea>
+				<textarea class="codemirror-accodes-css" id="custom-css-codes-input" name="custom-css-codes-input"><?php echo esc_attr( $accodes_global_css ); ?></textarea>
 			
 			<?php 
 			//	$css_on_footer ='';
-				$css_on_footer = get_option('accodes_global_css_on_footer', false); 
+				$accodes_css_on_footer = get_option('accodes_global_css_on_footer', false); 
 			?>
 			<p>
                 <label for="accodes_global_css_on_footer" class="accodes-checkbox-label">
-                            <input type="checkbox" <?php echo checked( $css_on_footer, 1, false ); ?>
-                                   name="accodes_global_css_on_footer" id="accodes_global_css_on_footer" value="1"/>
+							<input type="checkbox" <?php echo checked( $accodes_css_on_footer, 1, false ); ?>
+								name="accodes_global_css_on_footer" id="accodes_global_css_on_footer" value="1"/>
 							Insert Custom CSS before <em>&lt;/body&gt;</em> of website.
 				</label><br/>
 				By default, the plugin adds Custom CSS before <em>&lt;/head&gt;</em> section of your website.

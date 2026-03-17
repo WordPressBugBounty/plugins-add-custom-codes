@@ -18,6 +18,25 @@
 
             // Store instance so we can change it later
             cmInstance = wp.codeEditor.initialize($editor[0], cm_settings).codemirror;
+
+            function getDefaultTemplate(mode) {
+                switch (mode) {
+                    case 'javascript':
+                        return '/* Add your scripts here. You can remove example code */\nconsole.log("code loaded.");\n';
+                    case 'css':
+                        return "/* Your CSS here */\n.selector {\n\t\n}\n";
+                    case 'htmlmixed':
+                        return '<!-- Add your HTML here. You can remove example code-->\n<div></div>\n';
+                    case 'php':
+                    default:
+                        return "// Your PHP here\n";
+                }
+            }
+
+            // Insert default template on load if empty
+            if (cmInstance && !cmInstance.getValue().trim()) {
+                cmInstance.setValue(getDefaultTemplate(lang));
+            }
 			
 			// Handle theme toggle
             $('#accodes_dark_mode_toggle').on('change', function () {
@@ -40,6 +59,23 @@
             const selectedMode = $(this).val();
             if (cmInstance) {
                 cmInstance.setOption('mode', selectedMode);
+
+                // If the editor is empty, or contains one of the default templates, replace it.
+                const current = cmInstance.getValue().trim();
+                const isDefaultTemplate = (function (val) {
+                    if (!val) return true;
+                    const templates = [
+                        getDefaultTemplate('php').trim(),
+                        getDefaultTemplate('javascript').trim(),
+                        getDefaultTemplate('css').trim(),
+                        getDefaultTemplate('htmlmixed').trim()
+                    ];
+                    return templates.indexOf(val) !== -1;
+                })(current);
+
+                if (isDefaultTemplate || !current) {
+                    cmInstance.setValue(getDefaultTemplate(selectedMode));
+                }
             }
         });
 

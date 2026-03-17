@@ -1,5 +1,8 @@
 <?php
-
+// If this file was called directly, abort.
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
 add_action('admin_enqueue_scripts', 'accodes_enqueue_deactivation_feedback');
 function accodes_enqueue_deactivation_feedback($hook) {
     if ($hook !== 'plugins.php') {
