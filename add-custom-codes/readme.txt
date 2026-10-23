@@ -3,7 +3,7 @@ Contributors: SaifuMak
 Donate link: https://donate.stripe.com/9AQdRz5xJ87c9i0bIS
 Tags: custom css, php snippets, header codes, footer codes, custom codes
 Requires at least: 6.6.2
-Tested up to: 6.9
+Tested up to: 7.0
 Requires PHP: 7.4
 Stable tag: 5.0
 License: GPLv2 or later
